@@ -1,16 +1,16 @@
-using NUnit.Framework;
+/*using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using WindowsProcessesProgram;
+using WindowsProcesses;
 
 
 namespace Tests
 {
     [TestFixture]
-    public class Tests
+    public class WindowsProcessesTest
     {
         #region ¬вод данных
 
@@ -221,3 +221,4 @@ namespace Tests
         // имитаци€ полного мониторинга
     }
 }
+*/

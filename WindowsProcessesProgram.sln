@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsProcessesProgram", "WindowsProcessesProgram\WindowsProcessesProgram.csproj", "{9F7D8619-6ECF-473A-8C48-40B2EB211ADD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsProcesses", "WindowsProcessesProgram\WindowsProcesses.csproj", "{9F7D8619-6ECF-473A-8C48-40B2EB211ADD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{939EF6B1-6A7C-497D-94A6-F1B1A6CF7D68}"
 EndProject

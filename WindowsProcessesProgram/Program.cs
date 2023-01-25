@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 
 
-namespace WindowsProcessesProgram
+namespace WindowsProcesses
 {
     public class Program
     {
@@ -15,13 +15,12 @@ namespace WindowsProcessesProgram
         {
             Console.WriteLine("Hello! I need some information from you.");
 
-            Process myProcess = InputProcess();
+            string myProcessName = InputProcess();
 
             double processLifetime = InputMinutes("process maximum lifetime");
             double processMonFrequency = InputMinutes("monitoring frequency");
 
-            string finalMessage = MonitoringProcess(myProcess, processLifetime, processMonFrequency);
-            Console.WriteLine(finalMessage);
+            MonitoringProcess(myProcessName, processLifetime, processMonFrequency);
 
             if (killLog.Count != 0)
             {
@@ -32,42 +31,39 @@ namespace WindowsProcessesProgram
         }
 
 
-        static Process InputProcess() 
+        static string InputProcess() 
         {
-            Console.WriteLine("Write a process name or 'help' to see the full list of processes:");
-            Process myProcess = null;
+            Console.WriteLine("Write a process name or 'help' to see the full list of processes.");
+            string myProcessName = null;
 
-            while (myProcess is null)
+            while (myProcessName is null)
             {
-                string message = CheckInputProcess(Console.ReadLine(), out myProcess);
-
-                Console.WriteLine(message);
+                myProcessName = CheckInputProcess(Console.ReadLine().ToLower());
             }
-            return myProcess;
+            return myProcessName;
         }
 
-        public static string CheckInputProcess(string input, out Process myProcess)
+        public static string CheckInputProcess(string input)
         {
-            myProcess = null;
-
             if (input == "help")
             {
+                Console.WriteLine("Choose a process name from the list below:");
                 foreach (string process in PrintProcessesNames())
                     Console.WriteLine(process);
-
-                return "Choose a process name from the list:";
             }
-
-            foreach (Process process in Process.GetProcesses())
+            else if (input.Length < 2)
             {
-                if (process.ProcessName == input)
-                {
-                    myProcess = process;
-                    return "\nThanks for process name!";
-                }
+                Console.WriteLine("You wrote incorrect value! Write a process name or 'help':");
+            }
+            else
+            {
+                return input;
             }
 
-            return "You wrote incorrect value! Write a process name or 'help':";
+            return null;
+
+            //вернуть присваивание процесса?
+            //добавить поиск имени по части?
         }
 
 
@@ -78,50 +74,76 @@ namespace WindowsProcessesProgram
                 unicProcesses.Add(process.ProcessName);
 
             unicProcesses.Sort();
-
             return unicProcesses.Distinct();
         }
 
 
         static double InputMinutes(string valueName) 
         {
-            Console.WriteLine($"\nWrite a {valueName} (in minutes):");
             double minutes = 0;
-
-            while (minutes == 0)
+            while (minutes <= 0)
             {
-                string message = CheckInputMinutes(Console.ReadLine(), valueName, ref minutes);
-
-                Console.WriteLine(message);
+                Console.WriteLine($"\nWrite a \"{valueName}\" (in minutes):");
+                minutes = CheckInputMinutes(Console.ReadLine());
             }
             return minutes;
         }
 
-        public static string CheckInputMinutes(string input, string valueName, ref double minutes)
+        public static double CheckInputMinutes(string input)
         {
-            if (double.TryParse(input, out double j))
+            if (double.TryParse(input, out double time))
             {
-                if (j < 0)
-                    return $"You wrote a number less than zero! Write a {valueName} (in minutes):";
-                minutes = j;
-                return "\nThanks for time!";
+                if (time <= 0)
+                    Console.Write($"You wrote a number less then or equal to zero! ");
+                return time;
             }
-            return $"You wrote incorrect value! Write a {valueName} (in minutes):";
+            Console.Write($"You wrote incorrect value! ");
+            return 0;
         }
 
 
-        static string MonitoringProcess(Process process, double lifetime, double frequency)
+        static void MonitoringProcess(String processName, double lifetime, double monFrequency)
         {
             Console.WriteLine("\nStart monitoring. For exit press 'q'");
-            double workTime = -1;
 
+            double workTime = 0;
+            Process process = null;
+            
             while (!IsExit())
             {
-                workTime = FindingProcessInMonitoring(process, workTime, lifetime, frequency);
-
-                Thread.Sleep((int)(frequency * 1000)); //* 60 
+                if (process is null)
+                {
+                    workTime = 0;
+                    process = FindProcessByName(processName);
+                }
+                if (!(process is null))
+                {
+                    if (workTime == 0)
+                    {
+                        DateTime startTime = process.StartTime;
+                        workTime = Math.Round((DateTime.Now - startTime).TotalSeconds / 60, 3);
+                    }
+                    CheckProcessTime(ref process, workTime, lifetime);
+                    workTime = Math.Round(workTime + monFrequency, 3);
+                }
+                Thread.Sleep((int)(monFrequency * 1000 * 60));
             }
-            return "\nThank you for choosing our service :)";
+
+            Console.WriteLine("\nThank you for choosing our service :)");
+        }
+
+        public static Process FindProcessByName(String processName)
+        {
+            foreach (Process process in Process.GetProcesses())
+            {
+                if (processName == process.ProcessName.ToLower())
+                {
+                    Console.WriteLine("The process was found!");
+                    return process;
+                }
+            }
+            Console.WriteLine("Process " + processName + " not found.");
+            return null;
         }
 
         static bool IsExit()
@@ -132,37 +154,18 @@ namespace WindowsProcessesProgram
         }
 
 
-        public static double FindingProcessInMonitoring(Process process, double workedTime, double lifetime, double frequency)
+        public static void CheckProcessTime(ref Process process, double workTime, double lifetime)
         {
-            if (workedTime >= lifetime)
-            {
-                string message = KillProcess(process);
-                Console.WriteLine(message);
-            }
-            else if (FindingProcess(ref process))
-            {
-                Console.WriteLine("Process worked: " + workedTime);
-                return (workedTime < 0) ? 0 : workedTime + frequency;
-            }
-            return -1;
+            if (IsProcessStillExist(ref process))
+                if (workTime >= lifetime)
+                    Console.WriteLine(KillProcess(ref process));
+                else
+                    Console.WriteLine("Process work time = " + workTime + " min.");
+            else
+                Console.WriteLine($"The process was closed.");
         }
 
-
-        public static string KillProcess(Process process)
-        {
-            if (FindingProcess(ref process))
-            {
-                process.Kill();
-                process.WaitForExit();
-                killLog.Add(process);
-
-                return $"Process: '{process}' - killed.";
-            }
-            return $"Process: '{process}' - doesn't exist!";
-        }
-
-
-        public static bool FindingProcess(ref Process process)
+        public static bool IsProcessStillExist(ref Process process)
         {
             foreach (Process p in Process.GetProcesses())
             {
@@ -172,7 +175,19 @@ namespace WindowsProcessesProgram
                     return true;
                 }
             }
+            process = null;
             return false;
+        }
+
+        public static string KillProcess(ref Process process)
+        {
+            process.Kill();
+            process.WaitForExit();
+            killLog.Add(process);
+
+            string ret = $"Process: '{process}' - killed.";
+            process = null;
+            return ret;
         }
     }
 }

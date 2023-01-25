@@ -5,7 +5,10 @@ The command line utility expects three arguments:
 2. A process maximum lifetime (in minutes); 
 3. A monitoring frequency (in minutes). 
 
-When you run the program, it starts monitoring processes with the frequency specified. If a process of interest lives longer than the allowed duration, the utility kills the process and adds the corresponding record to the log. When no process exists at any given moment, the utility continues monitoring (new processes might appear later). 
+When you run the program, it starts monitoring processes with the frequency specified. 
+If a process of interest lives longer than the allowed duration, 
+the utility kills the process and adds the corresponding record to the log. 
+When no process exists at any given moment, the utility continues monitoring (new processes might appear later). 
 The utility stops when a special keyboard button "Q" is pressed.
 
 

@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WindowsProcessesProgram\WindowsProcessesProgram.csproj" />
+    <ProjectReference Include="..\WindowsProcessesProgram\WindowsProcesses.csproj" />
   </ItemGroup>
 
 </Project>
